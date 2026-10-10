@@ -66,6 +66,10 @@ main{padding:12px}
 .field input:focus,.field textarea:focus{border-color:var(--g700);outline:none;box-shadow:0 0 0 3px rgba(91,184,93,.25)}
 .field input[readonly]{background:var(--g100);font-weight:700}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tanki-rate{background:var(--g100);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-weight:800;color:var(--g800);margin-bottom:8px}
+.tanki-amt{margin-top:6px;font-size:14px;font-weight:700;color:var(--g800)}
+.hint{margin-top:5px;font-size:12px;font-weight:600;color:var(--mute)}
+.hint:empty{display:none}
 .dues-field input{color:var(--red)}
 #paidDuesRow{display:none}
 #paidDuesRow.show{display:grid}
@@ -301,22 +305,23 @@ nav .cnt.zero{background:var(--g100);color:var(--mute)}
         <textarea id="fAddress" rows="2" placeholder="Gaon / Mohalla / Khet ka pata"></textarea>
       </div>
       <div class="field">
+        <label for="fTanki">Tanki</label>
+        <div class="tanki-rate">₹500 / Tanki (fixed)</div>
+        <input id="fTanki" type="number" inputmode="decimal" min="0" placeholder="Kitni tanki?">
+        <div class="tanki-amt" id="fTankiAmt"></div>
+      </div>
+      <div class="field">
         <label for="fDate">Kis din kaam hai</label>
         <input id="fDate" type="date">
       </div>
-      <div class="row">
-        <div class="field">
-          <label for="fFrom">Time se <small>(optional)</small></label>
-          <input id="fFrom" type="time">
-        </div>
-        <div class="field">
-          <label for="fTo">Time tak <small>(optional)</small></label>
-          <input id="fTo" type="time">
-        </div>
+      <div class="field">
+        <label for="fFrom">Time <small>(optional)</small></label>
+        <input id="fFrom" type="time">
       </div>
       <div class="field">
         <label for="fTotal">Total Amount ₹ <small>(optional)</small></label>
         <input id="fTotal" type="number" inputmode="decimal" min="0" placeholder="0">
+        <div class="hint" id="fTotalHint"></div>
       </div>
       <div class="row" id="paidDuesRow">
         <div class="field">
@@ -382,7 +387,7 @@ nav .cnt.zero{background:var(--g100);color:var(--mute)}
     </div>
 
     <div class="spanel" id="sp-msg">
-      <p class="note">Yeh words use kar sakte ho: {name} {phone} {date} {time} {address} {total} {paid} {dues} {amountBlock} {received} {payDate} {statusLine}</p>
+      <p class="note">Yeh words use kar sakte ho: {name} {phone} {date} {time} {address} {total} {paid} {dues} {amountBlock} {tanki} {tankiAmount} {received} {payDate} {statusLine}</p>
       <div class="field">
         <label for="tplBooking">Booking Successful Message</label>
         <textarea id="tplBooking"></textarea>
@@ -434,12 +439,15 @@ nav .cnt.zero{background:var(--g100);color:var(--mute)}
     <div class="field"><label for="eName">Kisaan ka Naam</label><input id="eName" type="text" autocomplete="off"></div>
     <div class="field"><label for="ePhone">Phone No (WhatsApp)</label><input id="ePhone" type="tel" inputmode="numeric" maxlength="14"></div>
     <div class="field"><label for="eAddress">Address <small>(optional)</small></label><textarea id="eAddress" rows="2"></textarea></div>
-    <div class="field"><label for="eDate">Kis din kaam hai</label><input id="eDate" type="date"></div>
-    <div class="row">
-      <div class="field"><label for="eFrom">Time se <small>(optional)</small></label><input id="eFrom" type="time"></div>
-      <div class="field"><label for="eTo">Time tak <small>(optional)</small></label><input id="eTo" type="time"></div>
+    <div class="field">
+      <label for="eTanki">Tanki</label>
+      <div class="tanki-rate">₹500 / Tanki (fixed)</div>
+      <input id="eTanki" type="number" inputmode="decimal" min="0" placeholder="Kitni tanki?">
+      <div class="tanki-amt" id="eTankiAmt"></div>
     </div>
-    <div class="field"><label for="eTotal">Total Amount ₹ <small>(optional)</small></label><input id="eTotal" type="number" inputmode="decimal" min="0"></div>
+    <div class="field"><label for="eDate">Kis din kaam hai</label><input id="eDate" type="date"></div>
+    <div class="field"><label for="eFrom">Time <small>(optional)</small></label><input id="eFrom" type="time"></div>
+    <div class="field"><label for="eTotal">Total Amount ₹ <small>(optional)</small></label><input id="eTotal" type="number" inputmode="decimal" min="0"><div class="hint" id="eTotalHint"></div></div>
     <div class="row" id="eRow" style="display:none">
       <div class="field"><label for="ePaid">Paid Amount ₹</label><input id="ePaid" type="number" inputmode="decimal" min="0"></div>
       <div class="field dues-field"><label for="eDues">Dues Amount ₹</label><input id="eDues" type="text" readonly value="0"></div>
@@ -535,13 +543,14 @@ function fmtTime(t){
   let [h,m] = t.split(':').map(Number); const ap = h >= 12 ? 'PM' : 'AM';
   h = h % 12 || 12; return `${h}:${String(m).padStart(2,'0')} ${ap}`;
 }
-function timeRange(b){
-  if(!b.timeFrom) return '';
-  return b.timeTo ? `${fmtTime(b.timeFrom)} se ${fmtTime(b.timeTo)} tak` : `${fmtTime(b.timeFrom)} se`;
-}
+function timeRange(b){ return b.timeFrom ? fmtTime(b.timeFrom) : ''; }
 function num(v){ const n = parseFloat(v); return isNaN(n) || n < 0 ? 0 : n; }
 function money(n){ return '₹' + (Math.round(n*100)/100).toLocaleString('en-IN'); }
-function dues(b){ return Math.max(0, num(b.total) - num(b.paid)); }
+const TANKI_RATE = 500;   // fixed: ₹500 per tanki
+function tankiAmt(b){ return Math.round(num(b.tanki) * TANKI_RATE * 100) / 100; }
+// Total Amount bhara hai to wahi; nahi bhara to Tanki ka amount hi total maana jayega
+function totalOf(b){ return num(b.total) > 0 ? num(b.total) : tankiAmt(b); }
+function dues(b){ return Math.max(0, totalOf(b) - num(b.paid)); }
 function cleanPhone(p){ let d = String(p).replace(/\D/g,''); if(d.length > 10) d = d.slice(-10); return d; }
 function waLink(phone, text){ return `https://wa.me/91${cleanPhone(phone)}` + (text ? `?text=${encodeURIComponent(text)}` : ''); }
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
@@ -549,13 +558,22 @@ let toastT;
 function toast(msg){ const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove('show'), 2600); }
 
 function amountBlock(b){
-  if(num(b.total) <= 0) return '';
-  return `\nTotal: ${money(num(b.total))}\nPaid: ${money(num(b.paid))}\nDues: ${money(dues(b))}\n`;
+  let s = '';
+  if(num(b.tanki) > 0) s += `\nTanki: ${num(b.tanki)} (₹${TANKI_RATE} per tanki)\nTanki Amount: ${money(tankiAmt(b))}`;
+  if(num(b.total) > 0){
+    s += `\nTotal: ${money(num(b.total))}\nPaid: ${money(num(b.paid))}\nDues: ${money(dues(b))}`;
+  }else if(tankiAmt(b) > 0){
+    s += num(b.paid) > 0
+      ? `\nPaid: ${money(num(b.paid))}\nDues: ${money(dues(b))}`
+      : `\nStatus: Not Paid`;
+  }
+  return s ? s + '\n' : '';
 }
 function render(tpl, b, extra){
   const map = Object.assign({
     name: b.name, phone: b.phone, date: fmtDate(b.date), time: timeRange(b),
-    address: b.address || '-', total: num(b.total), paid: num(b.paid), dues: dues(b),
+    address: b.address || '-', total: totalOf(b), paid: num(b.paid), dues: dues(b),
+    tanki: num(b.tanki), tankiAmount: tankiAmt(b), tankiRate: TANKI_RATE,
     amountBlock: amountBlock(b)
   }, extra || {});
   let out = tpl.replace(/\{(\w+)\}/g, (m,k) => k in map ? map[k] : m);
@@ -582,8 +600,15 @@ function pushUp(b){
 }
 
 /* ============ Form ============ */
+function effTotal(totalVal, tankiVal){ const t = num(totalVal); return t > 0 ? t : num(tankiVal) * TANKI_RATE; }
+function updateHints(pre){
+  const tk = num($(pre + 'Tanki').value), tot = num($(pre + 'Total').value);
+  $(pre + 'TankiAmt').textContent = tk > 0 ? `Tanki Amount: ${money(tk * TANKI_RATE)}  (${tk} × ₹${TANKI_RATE})` : '';
+  $(pre + 'TotalHint').textContent = (tot <= 0 && tk > 0) ? `Khali chhodoge to Tanki ka ${money(tk * TANKI_RATE)} hi lagega (Not Paid)` : '';
+}
 function updateDuesField(){
-  const total = num($('fTotal').value);
+  updateHints('f');
+  const total = effTotal($('fTotal').value, $('fTanki').value);
   const row = $('paidDuesRow');
   if(total > 0){
     row.classList.add('show');
@@ -595,24 +620,25 @@ function updateDuesField(){
   }
 }
 $('fTotal').addEventListener('input', updateDuesField);
+$('fTanki').addEventListener('input', updateDuesField);
 $('fPaid').addEventListener('input', updateDuesField);
 
 function submitForm(){
   const name = $('fName').value.trim();
   const phone = cleanPhone($('fPhone').value);
   const date = $('fDate').value;
-  const timeFrom = $('fFrom').value, timeTo = $('fTo').value;
+  const timeFrom = $('fFrom').value, timeTo = '';
   if(!name) return toast('Kisaan ka naam likho');
   if(phone.length !== 10) return toast('10 digit ka sahi phone number daalo');
   if(!date) return toast('Kaam ki date chuno');
-  if(timeTo && !timeFrom) return toast('"Time tak" bharna hai to pehle "Time se" bharo');
-  if(timeFrom && timeTo && timeTo <= timeFrom) return toast('"Time tak" ka time "Time se" ke baad hona chahiye');
+  const tanki = num($('fTanki').value);
   const total = num($('fTotal').value), paid = num($('fPaid').value);
-  if(total > 0 && paid > total) return toast('Paid amount total se zyada nahi ho sakta');
+  const eff = effTotal(total, tanki);
+  if(eff > 0 && paid > eff) return toast('Paid amount total se zyada nahi ho sakta');
 
   const b = {
-    id: uid(), name, phone, address: $('fAddress').value.trim(), date, timeFrom, timeTo,
-    total, paid: total > 0 ? paid : 0, status: 'pending', createdAt: Date.now(), completedAt: null, clearedAt: null
+    id: uid(), name, phone, address: $('fAddress').value.trim(), tanki, date, timeFrom, timeTo,
+    total, paid: eff > 0 ? paid : 0, status: 'pending', createdAt: Date.now(), completedAt: null, clearedAt: null
   };
   bookings.push(b); Store.save(bookings); queueOp({t:'up', b});
 
@@ -621,8 +647,8 @@ function submitForm(){
   window.open(waLink(b.phone, msg), '_blank');
 
   // Form reset
-  ['fName','fPhone','fAddress','fTotal','fPaid'].forEach(i => $(i).value = '');
-  $('fDate').value = ''; $('fFrom').value = ''; $('fTo').value = '';
+  ['fName','fPhone','fAddress','fTanki','fTotal','fPaid'].forEach(i => $(i).value = '');
+  $('fDate').value = ''; $('fFrom').value = '';
   updateDuesField();
   toast('Booking save ho gayi');
   refresh(); setTab('list');
@@ -638,7 +664,7 @@ function matchQ(b, q){
 }
 
 function cardHTML(b, mode){
-  const d = dues(b), hasTotal = num(b.total) > 0;
+  const d = dues(b), hasTotal = totalOf(b) > 0;
   const selected = b.date === todayStr() && b.status === 'pending';
   const cls = ['k-card', selected ? 'today' : '', d > 0 ? 'hasdue' : ''].join(' ');
   let badge = '';
@@ -647,7 +673,7 @@ function cardHTML(b, mode){
 
   const money3 = hasTotal ? `
     <div class="k-money">
-      <div>Total<b>${money(num(b.total))}</b></div>
+      <div>Total<b>${money(totalOf(b))}</b></div>
       <div class="p">Paid<b>${money(num(b.paid))}</b></div>
       <div class="d">Dues<b>${money(d)}</b></div>
     </div>` : '';
@@ -674,6 +700,7 @@ function cardHTML(b, mode){
     <div class="k-info">
       <div>${I('calendar')} ${fmtDate(b.date)}${timeRange(b) ? ` &nbsp; ${I('clock')} ${timeRange(b)}` : ''}</div>
       ${b.address ? `<div>${I('pin')} ${esc(b.address)}</div>` : ''}
+      ${num(b.tanki) > 0 ? `<div>${I('sprout')} Tanki: ${num(b.tanki)} × ₹${TANKI_RATE} = ${money(tankiAmt(b))}</div>` : ''}
     </div>
     ${money3}
     ${dueBox}
@@ -813,14 +840,16 @@ document.addEventListener('click', e => { if(e.target.closest('#moreDone')){ don
 /* ============ Edit ============ */
 let editId = null;
 function updateEditDues(){
-  const total = num($('eTotal').value);
+  updateHints('e');
+  const total = effTotal($('eTotal').value, $('eTanki').value);
   $('eRow').style.display = total > 0 ? 'grid' : 'none';
   if(total > 0) $('eDues').value = Math.max(0, total - num($('ePaid').value));
 }
 function openEdit(b){
   editId = b.id;
   $('eName').value = b.name; $('ePhone').value = b.phone; $('eAddress').value = b.address || '';
-  $('eDate').value = b.date; $('eFrom').value = b.timeFrom; $('eTo').value = b.timeTo;
+  $('eTanki').value = num(b.tanki) > 0 ? num(b.tanki) : '';
+  $('eDate').value = b.date; $('eFrom').value = b.timeFrom;
   $('eTotal').value = num(b.total) > 0 ? num(b.total) : ''; $('ePaid').value = num(b.paid) > 0 ? num(b.paid) : '';
   updateEditDues();
   $('editModal').classList.add('show'); pushModal();
@@ -829,19 +858,20 @@ function closeEdit(){ editId = null; closeModals(); }
 function saveEdit(){
   const b = bookings.find(x => x.id === editId); if(!b) return closeEdit();
   const name = $('eName').value.trim(), phone = cleanPhone($('ePhone').value), date = $('eDate').value;
-  const timeFrom = $('eFrom').value, timeTo = $('eTo').value;
+  const timeFrom = $('eFrom').value, timeTo = '';
   if(!name) return toast('Kisaan ka naam likho');
   if(phone.length !== 10) return toast('10 digit ka sahi phone number daalo');
   if(!date) return toast('Kaam ki date chuno');
-  if(timeTo && !timeFrom) return toast('"Time tak" bharna hai to pehle "Time se" bharo');
-  if(timeFrom && timeTo && timeTo <= timeFrom) return toast('"Time tak" ka time "Time se" ke baad hona chahiye');
+  const tanki = num($('eTanki').value);
   const total = num($('eTotal').value), paid = num($('ePaid').value);
-  if(total > 0 && paid > total) return toast('Paid amount total se zyada nahi ho sakta');
-  Object.assign(b, { name, phone, address: $('eAddress').value.trim(), date, timeFrom, timeTo, total, paid: total > 0 ? paid : 0 });
+  const eff = effTotal(total, tanki);
+  if(eff > 0 && paid > eff) return toast('Paid amount total se zyada nahi ho sakta');
+  Object.assign(b, { name, phone, address: $('eAddress').value.trim(), tanki, date, timeFrom, timeTo, total, paid: eff > 0 ? paid : 0 });
   if(b.status === 'done') b.clearedAt = dues(b) <= 0 ? (b.clearedAt || Date.now()) : null;
   Store.save(bookings); pushUp(b); closeEdit(); refresh(); toast('Edit save ho gaya');
 }
 $('eTotal').addEventListener('input', updateEditDues);
+$('eTanki').addEventListener('input', updateEditDues);
 $('ePaid').addEventListener('input', updateEditDues);
 $('eSave').addEventListener('click', saveEdit);
 $('eCancel').addEventListener('click', closeEdit);
@@ -969,6 +999,8 @@ async function pull(){
     // 60 din+ purane clear record sirf phone me rehte hain (Sheet se hat chuke), unhe bachao
     const keep = bookings.filter(b => !sIds.has(b.id) && (b.archived || shouldArchive(b)));
     keep.forEach(b => { b.archived = true; });
+    const localTanki = {}; bookings.forEach(x => { if(num(x.tanki) > 0) localTanki[x.id] = num(x.tanki); });
+    server.forEach(x => { if(x.tanki == null || x.tanki === '') x.tanki = localTanki[x.id] || 0; });   // Sheet me tanki column na ho tab bhi phone me bacha rahe
     bookings = server.concat(keep); Store.save(bookings);
     if(j.templates){   // server me 'pay' template nahi hota, isliye phone wale ko mat mitao
       let loc = {}; try{ loc = JSON.parse(localStorage.getItem(TPL_KEY)) || {}; }catch(e){}

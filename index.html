@@ -440,6 +440,17 @@ nav .cnt.zero{background:var(--g100);color:var(--mute)}
   </div>
 </div>
 
+<!-- Confirm box (browser ka github wala popup nahi) -->
+<div class="modal" id="cfModal" style="z-index:90;align-items:center;padding:20px">
+  <div class="sheet" style="border-radius:16px;max-width:380px">
+    <p id="cfMsg" style="font-size:16px;font-weight:700;color:var(--ink);margin:4px 0 14px"></p>
+    <div class="row">
+      <button class="btn btn-light" id="cfNo">Cancel</button>
+      <button class="btn btn-primary" id="cfYes" style="padding:12px">OK</button>
+    </div>
+  </div>
+</div>
+
 <!-- WhatsApp chooser -->
 <div class="modal" id="waModal">
   <div class="sheet">
@@ -907,6 +918,21 @@ $('eSave').addEventListener('click', saveEdit);
 $('eCancel').addEventListener('click', closeEdit);
 $('editModal').addEventListener('click', e => { if(e.target === $('editModal')) closeEdit(); });
 
+/* ============ Confirm box ============ */
+function askConfirm(msg, okText, danger){
+  return new Promise(res => {
+    $('cfMsg').textContent = msg;
+    const yes = $('cfYes'), no = $('cfNo'), box = $('cfModal');
+    yes.textContent = okText || 'OK';
+    yes.style.background = danger ? 'var(--red)' : '';
+    const done = v => { box.classList.remove('show'); yes.onclick = no.onclick = box.onclick = null; res(v); };
+    yes.onclick = () => done(true);
+    no.onclick = () => done(false);
+    box.onclick = e => { if(e.target === box) done(false); };
+    box.classList.add('show');
+  });
+}
+
 /* ============ Phone: sirf 10 digit ============ */
 function limitPhone(e){
   let d = e.target.value.replace(/\D/g,'');
@@ -934,7 +960,7 @@ $('waCancel').addEventListener('click', () => { waId = null; closeModals(); });
 $('waModal').addEventListener('click', e => { if(e.target === $('waModal')){ waId = null; closeModals(); } });
 
 /* ============ Card actions ============ */
-document.addEventListener('click', e => {
+document.addEventListener('click', async e => {
   const btn = e.target.closest('[data-act]'); if(!btn) return;
   const id = btn.dataset.id; const b = bookings.find(x => x.id === id); if(!b) return;
   const act = btn.dataset.act;
@@ -942,7 +968,7 @@ document.addEventListener('click', e => {
   if(act === 'wa'){ openWA(b); return; }
 
   if(act === 'del'){
-    if(!confirm(`${b.name} ka data delete kar do?`)) return;
+    if(!(await askConfirm(`${b.name} ka data delete kar do?`, 'Delete', true))) return;
     bookings = bookings.filter(x => x.id !== id); Store.save(bookings); queueOp({t:'del', id}); refresh(); toast('Delete ho gaya');
   }
   else if(act === 'totoday'){
@@ -1114,11 +1140,11 @@ $('lgBtn').addEventListener('click', doLogin);
 $('lgPw').addEventListener('keydown', e => { if(e.key === 'Enter') doLogin(); });
 
 /* ---- Logout ---- */
-$('logoutBtn').addEventListener('click', () => {
+$('logoutBtn').addEventListener('click', async () => {
   const nArch = bookings.filter(b => b.archived).length;
-  if(queue.length && !confirm('Kuch changes abhi sync nahi hue. Logout karne par woh kho jayenge. Phir bhi logout karein?')) return;
-  if(nArch && !confirm(nArch + ' purane (60 din+) record sirf is phone me save hain. Logout karne par woh mit jayenge. Phir bhi logout karein?')) return;
-  if(!queue.length && !nArch && !confirm('Logout karein?')) return;
+  if(queue.length && !(await askConfirm('Kuch changes abhi sync nahi hue. Logout karne par woh kho jayenge. Phir bhi logout karein?', 'Logout', true))) return;
+  if(nArch && !(await askConfirm(nArch + ' purane (60 din+) record sirf is phone me save hain. Logout karne par woh mit jayenge. Phir bhi logout karein?', 'Logout', true))) return;
+  if(!queue.length && !nArch && !(await askConfirm('Logout karein?', 'Logout'))) return;
   [TOKEN_KEY, KEY, QUEUE_KEY].forEach(k => localStorage.removeItem(k));
   location.reload();
 });

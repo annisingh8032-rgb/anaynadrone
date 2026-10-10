@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ananya Krishi Drone Seva</title>
+<meta name="theme-color" content="#1b7a2e">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+:root{
+  --g900:#0e4d1c; --g800:#1b7a2e; --g700:#2a9440; --g500:#5bb85d; --g100:#e6f4e4; --g50:#f4faf2;
+  --yellow:#f2c230; --red:#c8372d; --red-bg:#fdecea; --ink:#18301d; --mute:#5d7262; --line:#d3e5d0; --white:#fff;
+  --r:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Devanagari","Nirmala UI",sans-serif;
+  background:var(--g50);color:var(--ink);min-height:100vh;
+  padding-bottom:calc(84px + env(safe-area-inset-bottom,0px));
+  font-size:15px;line-height:1.45;
+}
+button,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+
+/* Header */
+.header{
+  background:linear-gradient(160deg,var(--g900),var(--g800) 70%);
+  color:#fff;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 14px;
+  display:flex;align-items:center;gap:12px;position:relative;
+}
+.header img{height:52px;width:auto;background:#fff;border-radius:10px;padding:3px}
+.header h1{font-size:19px;line-height:1.2;font-weight:800;letter-spacing:.2px}
+.header p{font-size:12px;opacity:.9;margin-top:2px}
+.hbtns{margin-left:auto;display:flex;gap:6px}
+.icon-btn{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:10px;padding:7px 10px;font-size:13px;font-weight:600;cursor:pointer}
+#installBtn{display:none}
+
+/* Aaj ka plan */
+.plan{margin:12px 12px 0;background:#fff;border:2px solid var(--g700);border-radius:var(--r);padding:12px 14px}
+.plan-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.plan-top label{font-size:13px;font-weight:700;color:var(--g800)}
+.plan-top input[type=date]{border:1.5px solid var(--line);border-radius:10px;padding:6px 8px;background:var(--g50)}
+.plan-msg{margin-top:8px;font-size:16px;font-weight:700}
+.plan-msg b{color:var(--g800);font-size:20px}
+.plan-names{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{background:var(--g100);border:1px solid var(--line);color:var(--g900);border-radius:99px;padding:3px 10px;font-size:13px;font-weight:600}
+.plan-go{margin-top:8px;background:none;border:none;color:var(--g800);font-weight:700;text-decoration:underline;cursor:pointer;padding:0;font-size:13px}
+
+/* Sections */
+main{padding:12px}
+.section{display:none}
+.section.active{display:block}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.card h2{font-size:17px;color:var(--g800);margin-bottom:10px}
+
+/* Form */
+.field{margin-bottom:12px}
+.field label{display:block;font-size:13px;font-weight:700;margin-bottom:4px;color:var(--g900)}
+.field label small{font-weight:500;color:var(--mute)}
+.field input,.field textarea{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff}
+.field input:focus,.field textarea:focus{border-color:var(--g700);outline:none;box-shadow:0 0 0 3px rgba(91,184,93,.25)}
+.field input[readonly]{background:var(--g100);font-weight:700}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dues-field input{color:var(--red)}
+#paidDuesRow{display:none}
+#paidDuesRow.show{display:grid}
+.btn{border:none;border-radius:12px;padding:12px 16px;font-weight:700;cursor:pointer;font-size:15px}
+.btn-primary{background:var(--g800);color:#fff;width:100%;font-size:16px;padding:14px}
+.btn-primary:active{background:var(--g900)}
+.btn-light{background:var(--g100);color:var(--g900);border:1px solid var(--line)}
+
+/* Booking cards */
+.filters{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.pill{border:1.5px solid var(--g700);background:#fff;color:var(--g800);border-radius:99px;padding:6px 14px;font-weight:700;font-size:13px;cursor:pointer}
+.pill.on{background:var(--g800);color:#fff}
+.k-card{background:#fff;border:1px solid var(--line);border-left:6px solid var(--g500);border-radius:var(--r);padding:12px 14px;margin-bottom:12px}
+.k-card.today{border-left-color:var(--yellow);box-shadow:0 0 0 2px rgba(242,194,48,.35)}
+.k-card.hasdue{border-left-color:var(--red)}
+.k-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.k-name{font-size:17px;font-weight:800}
+.k-phone{color:var(--mute);font-size:14px}
+.badge{font-size:11px;font-weight:800;border-radius:99px;padding:3px 9px;white-space:nowrap}
+.badge.sel{background:var(--yellow);color:#4a3800}
+.badge.ok{background:var(--g100);color:var(--g800)}
+.badge.due{background:var(--red-bg);color:var(--red)}
+.k-info{margin-top:8px;display:grid;gap:3px;font-size:14px}
+.k-money{margin-top:8px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;text-align:center}
+.k-money div{background:var(--g50);border:1px solid var(--line);border-radius:10px;padding:6px 4px;font-size:12px;color:var(--mute)}
+.k-money b{display:block;font-size:15px;color:var(--ink)}
+.k-money .d b{color:var(--red)}
+.k-money .p b{color:var(--g800)}
+.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.actions a,.actions button{display:block;text-align:center;text-decoration:none;border:none;border-radius:10px;padding:10px 4px;font-weight:700;font-size:14px;cursor:pointer}
+.a-call{background:var(--g800);color:#fff}
+.a-wa{background:#25d366;color:#053b1a}
+.a-del{background:var(--red-bg);color:var(--red);border:1px solid #f1b9b3 !important}
+.done-btn{width:100%;margin-top:8px;background:#fff;border:2px solid var(--g700) !important;color:var(--g800);border-radius:10px;padding:10px;font-weight:800;cursor:pointer}
+.due-box{margin-top:10px;background:var(--red-bg);border:1px solid #f1b9b3;border-radius:12px;padding:10px}
+.due-box h4{color:var(--red);font-size:14px;margin-bottom:6px}
+.due-box textarea{width:100%;min-height:92px;border:1.5px solid #f1b9b3;border-radius:10px;padding:8px;font-size:13.5px;background:#fff}
+.due-box .btn{margin-top:6px;width:100%;background:var(--red);color:#fff;padding:10px}
+.recv{display:flex;gap:6px;margin-top:8px}
+.recv input{flex:1;min-width:0;border:1.5px solid #f1b9b3;border-radius:10px;padding:8px;background:#fff}
+.recv button{background:var(--g800);color:#fff;border:none;border-radius:10px;padding:8px 12px;font-weight:700;cursor:pointer}
+.empty{text-align:center;color:var(--mute);padding:32px 16px;background:#fff;border:1.5px dashed var(--line);border-radius:var(--r)}
+.note{font-size:12px;color:var(--mute);margin:-2px 0 10px}
+
+/* Bottom nav */
+nav{
+  position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:2px solid var(--g700);
+  display:grid;grid-template-columns:repeat(3,1fr);padding-bottom:env(safe-area-inset-bottom,0px);z-index:20;
+}
+nav button{background:none;border:none;padding:10px 4px 9px;font-size:12px;font-weight:700;color:var(--mute);cursor:pointer;position:relative}
+nav button .ic{display:block;font-size:20px;line-height:1.1}
+nav button.on{color:var(--g800);background:var(--g100)}
+nav .cnt{position:absolute;top:4px;right:calc(50% - 26px);background:var(--red);color:#fff;border-radius:99px;font-size:10px;min-width:17px;padding:1px 5px}
+
+/* Modal + toast */
+.modal{position:fixed;inset:0;background:rgba(10,40,16,.55);display:none;align-items:flex-end;justify-content:center;z-index:50}
+.modal.show{display:flex}
+.sheet{background:#fff;width:100%;max-width:560px;max-height:90vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px}
+.sheet h3{color:var(--g800);margin-bottom:6px}
+.sheet textarea{min-height:150px}
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--g900);color:#fff;padding:10px 16px;border-radius:99px;font-weight:600;font-size:14px;z-index:60;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90vw;text-align:center}
+.toast.show{opacity:1}
+/* ===== SVG icons ===== */
+.i{width:1.2em;height:1.2em;flex:none;vertical-align:-.22em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;margin-right:5px}
+.icon-btn .i,nav .i{margin:0}
+nav .ic .i{width:24px;height:24px}
+.plan-msg .i{width:1.1em;height:1.1em;margin:0 0 0 4px;color:var(--g700)}
+.k-info .i,.k-phone .i{color:var(--g700);margin-right:4px}
+.empty .i{color:var(--g700);width:1.4em;height:1.4em}
+.due-box h4 .i{margin-right:4px}
+.pill .i{margin-right:4px}
+/* ===== Sab Booking grouped list ===== */
+.d-group{margin-bottom:14px}
+.d-head{display:flex;align-items:center;gap:6px;background:var(--g800);color:#fff;border-radius:10px 10px 0 0;padding:9px 12px;font-weight:800;font-size:14px}
+.d-head .i{margin-right:2px}
+.d-head .badge{margin-left:4px}
+.d-cnt{margin-left:auto;background:#fff;color:var(--g800);border-radius:99px;min-width:24px;text-align:center;padding:1px 8px;font-size:13px}
+.d-row{background:#fff;border:1px solid var(--line);border-top:none}
+.d-row:last-child{border-radius:0 0 10px 10px}
+.d-row summary{list-style:none;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px;min-height:48px;cursor:pointer;font-weight:700}
+.d-row summary::-webkit-details-marker{display:none}
+.d-row summary::after{content:"+";color:var(--g700);font-size:20px;font-weight:800;margin-left:6px}
+.d-row[open] summary::after{content:"\2212"}
+.d-row[open] summary{background:var(--g100)}
+.d-time{margin-left:auto;color:var(--mute);font-weight:600;font-size:13px}
+.d-row .k-card{margin:8px;border-left-width:6px}
+.d-head .badge.sel{background:var(--yellow)}
+.d-head .badge.due{background:#fff}
+/* ===== Mobile-first tuning ===== */
+html{-webkit-text-size-adjust:100%}
+body{overscroll-behavior-y:none;touch-action:manipulation}
+button,.actions a,.pill{min-height:44px;user-select:none;-webkit-user-select:none}
+.field input,.field textarea,.due-box textarea,.recv input,.plan-top input[type=date]{font-size:16px}
+.field input[type=date],.field input[type=time]{min-height:48px;appearance:none;-webkit-appearance:none;background:#fff}
+.field input,.field textarea{padding:12px}
+.icon-btn{min-width:44px;min-height:44px;font-size:18px;padding:6px 10px}
+.header{padding-bottom:12px;gap:10px}
+.header img{height:44px}
+.header h1{font-size:16.5px}
+.header p{font-size:11.5px}
+.plan{margin:10px 10px 0;padding:10px 12px}
+.plan-msg{font-size:15px}
+.plan-msg b{font-size:19px}
+main{padding:10px}
+.card{padding:12px}
+.btn-primary{min-height:52px}
+.k-money div{padding:8px 2px}
+.actions{gap:8px}
+.actions a,.actions button{min-height:46px;display:flex;align-items:center;justify-content:center;font-size:14px}
+.done-btn{min-height:48px;font-size:15px}
+.due-box .btn{min-height:46px}
+.recv input,.recv button{min-height:44px}
+nav button{min-height:58px}
+.sheet{max-height:92vh;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+.toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+@media(max-width:380px){
+  .header h1{font-size:14.5px}
+  .header img{height:38px}
+  .row{gap:8px}
+  .k-name{font-size:16px}
+  .k-money b{font-size:13.5px}
+  nav button{font-size:11px}
+}
+@media(min-width:700px){main,.plan{max-width:620px;margin-left:auto;margin-right:auto}.plan{margin-top:12px}}
+@media(prefers-reduced-motion:reduce){*{transition:none !important;scroll-behavior:auto !important}}
+
+/* ===== Login + security ===== */
+.login{position:fixed;inset:0;z-index:100;background:linear-gradient(160deg,var(--g900),var(--g800) 70%);display:none;align-items:center;justify-content:center;padding:20px;overflow:auto}
+.login.show{display:flex}
+.login-box{background:#fff;border-radius:20px;padding:22px 18px;width:100%;max-width:380px;text-align:center}
+.login-box img{height:96px;width:auto;margin-bottom:6px}
+.login-box h2{color:var(--g800);font-size:21px}
+.login-box > p{color:var(--mute);font-size:13px;margin-top:2px}
+.login-box .field{text-align:left;margin-top:14px;margin-bottom:0}
+.login-err{color:var(--red);font-weight:700;font-size:13px;min-height:20px;margin:10px 0}
+.sep{border:none;border-top:1px solid var(--line);margin:16px 0}
+
+/* ===== v3 ===== */
+.actions{grid-template-columns:1fr 1fr}
+.a-edit{background:var(--g100);color:var(--g900);border:1px solid var(--line) !important}
+.search{margin-bottom:10px}
+.search input[type=search],.search input[type=date]{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:12px;background:#fff;font-size:16px}
+.search input:focus{border-color:var(--g700);outline:none;box-shadow:0 0 0 3px rgba(91,184,93,.25)}
+.srow{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:8px}
+.srow input[type=date]{min-height:48px;appearance:none;-webkit-appearance:none}
+nav .cnt{position:static;display:inline-block;margin-left:5px;min-width:19px;text-align:center;font-size:11px;padding:1px 6px;vertical-align:1px}
+nav .cnt.zero{background:var(--g100);color:var(--mute)}
+.d-cnt{font-size:12px;white-space:nowrap}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-sprout" viewBox="0 0 24 24"><path d="M7 20h10"/><path d="M10 20c5.5-2.5.8-6.4 3-10"/><path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z"/><path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2z"/></symbol>
+  <symbol id="i-check-circle" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></symbol>
+  <symbol id="i-drone" viewBox="0 0 24 24"><circle cx="5" cy="5" r="2.5"/><circle cx="19" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><circle cx="19" cy="19" r="2.5"/><path d="M7 7l3 3M17 7l-3 3M7 17l3-3M17 17l-3-3"/><rect x="9.5" y="9.5" width="5" height="5" rx="1"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+  <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></symbol>
+</svg>
+
+<!-- Login panel -->
+<div class="login show" id="login">
+  <div class="login-box">
+    <img src="logo.png" alt="Logo">
+    <h2>Admin Login</h2>
+    <p>Ananya Krishi Drone Seva</p>
+    <div class="field" id="lgUrlWrap" style="display:none">
+      <label for="lgUrl">Server Link <small>(Apps Script /exec link)</small></label>
+      <input id="lgUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="lgPw">Password</label>
+      <input id="lgPw" type="password" autocomplete="current-password" placeholder="Password daalo">
+    </div>
+    <div class="login-err" id="lgErr" role="alert"></div>
+    <button class="btn btn-primary" id="lgBtn"><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg> Login</button>
+  </div>
+</div>
+
+<header class="header">
+  <img src="logo.png" alt="Logo">
+  <div>
+    <h1>Ananya Krishi Drone Seva</h1>
+    <p>आधुनिक तकनीक, समृद्ध किसान</p>
+  </div>
+  <div class="hbtns">
+    <button class="icon-btn" id="installBtn" aria-label="Install app"><svg class="i" aria-hidden="true"><use href="#i-download"/></svg></button>
+    <button class="icon-btn" id="setBtn" aria-label="Message settings"><svg class="i" aria-hidden="true"><use href="#i-settings"/></svg></button>
+  </div>
+</header>
+
+<!-- Upar hi dikhega: selected date par kitne logo ke paas jana hai -->
+
+
+<main>
+  <!-- SECTION 1: Naya Booking -->
+  <section class="section active" id="sec-add">
+    <div class="card">
+      <h2><svg class="i" aria-hidden="true"><use href="#i-sprout"/></svg> Naya Booking</h2>
+      <div class="field">
+        <label for="fName">Kisaan ka Naam</label>
+        <input id="fName" type="text" placeholder="Kisaan ka naam" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="fPhone">Phone No (WhatsApp)</label>
+        <input id="fPhone" type="tel" inputmode="numeric" maxlength="14" placeholder="10 digit mobile number">
+      </div>
+      <div class="field">
+        <label for="fAddress">Address <small>(optional)</small></label>
+        <textarea id="fAddress" rows="2" placeholder="Gaon / Mohalla / Khet ka pata"></textarea>
+      </div>
+      <div class="field">
+        <label for="fDate">Kis din kaam hai</label>
+        <input id="fDate" type="date">
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="fFrom">Time se</label>
+          <input id="fFrom" type="time" value="07:00">
+        </div>
+        <div class="field">
+          <label for="fTo">Time tak</label>
+          <input id="fTo" type="time" value="10:00">
+        </div>
+      </div>
+      <div class="field">
+        <label for="fTotal">Total Amount ₹ <small>(optional)</small></label>
+        <input id="fTotal" type="number" inputmode="decimal" min="0" placeholder="0">
+      </div>
+      <div class="row" id="paidDuesRow">
+        <div class="field">
+          <label for="fPaid">Paid Amount ₹</label>
+          <input id="fPaid" type="number" inputmode="decimal" min="0" placeholder="0">
+        </div>
+        <div class="field dues-field">
+          <label for="fDues">Dues Amount ₹</label>
+          <input id="fDues" type="text" readonly value="0">
+        </div>
+      </div>
+      <button class="btn btn-primary" id="submitBtn"><svg class="i" aria-hidden="true"><use href="#i-check-circle"/></svg> Submit &amp; WhatsApp Bhejo</button>
+    </div>
+  </section>
+
+  <!-- SECTION 2: Kisaan List -->
+  <section class="section" id="sec-list">
+    <div class="search">
+      <input id="qList" type="search" placeholder="Naam ya phone se khojo" autocomplete="off">
+      <div class="srow">
+        <input id="qDate" type="date" aria-label="Date se khojo">
+        <button class="btn btn-light" id="qClear">Saaf karo</button>
+      </div>
+    </div>
+    <div class="filters" id="listFilters">
+      <button class="pill on" data-filter="today" id="pillToday">Aaj ka Visit</button>
+      <button class="pill" data-filter="all" id="pillAll">Sab Booking</button>
+    </div>
+    <div id="listBox"></div>
+  </section>
+
+  <!-- SECTION 3: Kaam Completed -->
+  <section class="section" id="sec-done">
+    <div class="search">
+      <input id="qDone" type="search" placeholder="Naam ya phone se khojo" autocomplete="off">
+    </div>
+    <div class="filters">
+      <button class="pill on" data-dtab="clear"><svg class="i" aria-hidden="true"><use href="#i-check-circle"/></svg> Clear</button>
+      <button class="pill" data-dtab="dues"><svg class="i" aria-hidden="true"><use href="#i-alert"/></svg> Dues</button>
+    </div>
+    <p class="note" id="doneNote"></p>
+    <div id="doneBox"></div>
+  </section>
+</main>
+
+<nav>
+  <button data-tab="add" class="on"><span class="ic"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></span>Naya Booking</button>
+  <button data-tab="list"><span class="ic"><svg class="i" aria-hidden="true"><use href="#i-users"/></svg></span>Kisaan List<span class="cnt zero" id="cntList">0</span></button>
+  <button data-tab="done"><span class="ic"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg></span>Kaam Complete<span class="cnt" id="cntDue" style="display:none"></span></button>
+</nav>
+
+<!-- Message settings -->
+<div class="modal" id="setModal">
+  <div class="sheet">
+    <h3><svg class="i" aria-hidden="true"><use href="#i-settings"/></svg> Message Settings</h3>
+    <p class="note">Yeh words use kar sakte ho: {name} {phone} {date} {time} {address} {total} {paid} {dues} {amountBlock}</p>
+    <div class="field">
+      <label for="tplBooking">Booking Successful Message</label>
+      <textarea id="tplBooking"></textarea>
+    </div>
+    <div class="field">
+      <label for="tplDues">Dues Message (custom)</label>
+      <textarea id="tplDues"></textarea>
+    </div>
+    <div class="row">
+      <button class="btn btn-light" id="tplReset">Default Karo</button>
+      <button class="btn btn-primary" id="tplSave" style="padding:12px">Save</button>
+    </div>
+    <hr class="sep">
+    <h3><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg> Admin Password Badlo</h3>
+    <div class="field">
+      <label for="pwOld">Purana Password</label>
+      <input id="pwOld" type="password" autocomplete="current-password">
+    </div>
+    <div class="field">
+      <label for="pwNew">Naya Password <small>(kam se kam 6 akshar/number)</small></label>
+      <input id="pwNew" type="password" autocomplete="new-password">
+    </div>
+    <div class="field">
+      <label for="pwNew2">Naya Password Dobara</label>
+      <input id="pwNew2" type="password" autocomplete="new-password">
+    </div>
+    <button class="btn btn-primary" id="pwSave">Password Badlo</button>
+    <hr class="sep">
+    <p class="note" id="syncStatus"></p>
+    <div class="row">
+      <button class="btn btn-light" id="syncNow"><svg class="i" aria-hidden="true"><use href="#i-refresh"/></svg> Sync Karo</button>
+      <button class="btn btn-light" id="logoutBtn"><svg class="i" aria-hidden="true"><use href="#i-logout"/></svg> Logout</button>
+    </div>
+    <button class="btn btn-light" id="tplClose" style="width:100%;margin-top:8px">Band Karo</button>
+  </div>
+</div>
+
+<!-- Edit booking -->
+<div class="modal" id="editModal">
+  <div class="sheet">
+    <h3><svg class="i" aria-hidden="true"><use href="#i-edit"/></svg> Booking Edit Karo</h3>
+    <div class="field"><label for="eName">Kisaan ka Naam</label><input id="eName" type="text" autocomplete="off"></div>
+    <div class="field"><label for="ePhone">Phone No (WhatsApp)</label><input id="ePhone" type="tel" inputmode="numeric" maxlength="14"></div>
+    <div class="field"><label for="eAddress">Address <small>(optional)</small></label><textarea id="eAddress" rows="2"></textarea></div>
+    <div class="field"><label for="eDate">Kis din kaam hai</label><input id="eDate" type="date"></div>
+    <div class="row">
+      <div class="field"><label for="eFrom">Time se</label><input id="eFrom" type="time"></div>
+      <div class="field"><label for="eTo">Time tak</label><input id="eTo" type="time"></div>
+    </div>
+    <div class="field"><label for="eTotal">Total Amount ₹ <small>(optional)</small></label><input id="eTotal" type="number" inputmode="decimal" min="0"></div>
+    <div class="row" id="eRow" style="display:none">
+      <div class="field"><label for="ePaid">Paid Amount ₹</label><input id="ePaid" type="number" inputmode="decimal" min="0"></div>
+      <div class="field dues-field"><label for="eDues">Dues Amount ₹</label><input id="eDues" type="text" readonly value="0"></div>
+    </div>
+    <div class="row">
+      <button class="btn btn-light" id="eCancel">Cancel</button>
+      <button class="btn btn-primary" id="eSave" style="padding:12px">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ Storage layer (baad me Google Sheet yahin se connect hoga) ============ */
+const KEY = 'akds_bookings_v1';
+const TPL_KEY = 'akds_templates_v2';
+const DAY = 86400000;
+
+const Store = {
+  load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || []; }catch(e){ return []; } },
+  save(list){ try{ localStorage.setItem(KEY, JSON.stringify(list)); }catch(e){ toast('Storage full / blocked'); } }
+};
+
+const DEFAULT_TPL = {
+  booking:
+`*Ananya Krishi Drone Seva*
+
+*Booking Successful*
+
+Namaste {name} ji,
+Aapki drone spray booking confirm ho gayi hai.
+
+Date: {date}
+Time: {time}
+Address: {address}
+{amountBlock}
+Dhanyawad.`,
+  dues:
+`*Ananya Krishi Drone Seva*
+
+Namaste {name} ji,
+Aapka ₹{dues} ka payment abhi baaki hai.
+
+Total: ₹{total}
+Paid: ₹{paid}
+Dues: ₹{dues}
+
+Kripya jaldi payment kar dein.
+Dhanyawad.`
+};
+
+function stripTag(t){ return String(t || '').replace(/\n*आधुनिक तकनीक, समृद्ध किसान\s*$/, ''); }
+function getTpl(){
+  let t;
+  try{ t = Object.assign({}, DEFAULT_TPL, JSON.parse(localStorage.getItem(TPL_KEY)) || {}); }
+  catch(e){ t = Object.assign({}, DEFAULT_TPL); }
+  t.booking = stripTag(t.booking);
+  return t;
+}
+
+/* ============ State ============ */
+let bookings = Store.load();
+let tab = 'add';
+let listFilter = 'today';
+let doneTab = 'clear';
+let planDate = todayStr();
+
+/* ============ Helpers ============ */
+const $ = id => document.getElementById(id);
+const I = n => `<svg class="i" aria-hidden="true"><use href="#i-${n}"/></svg>`;
+function todayStr(){
+  const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0,10);
+}
+function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function fmtDate(s){ if(!s) return '-'; const [y,m,d] = s.split('-'); return `${d}-${m}-${y}`; }
+function fmtTime(t){
+  if(!t) return '';
+  let [h,m] = t.split(':').map(Number); const ap = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12; return `${h}:${String(m).padStart(2,'0')} ${ap}`;
+}
+function timeRange(b){ return `${fmtTime(b.timeFrom)} se ${fmtTime(b.timeTo)} tak`; }
+function num(v){ const n = parseFloat(v); return isNaN(n) || n < 0 ? 0 : n; }
+function money(n){ return '₹' + (Math.round(n*100)/100).toLocaleString('en-IN'); }
+function dues(b){ return Math.max(0, num(b.total) - num(b.paid)); }
+function cleanPhone(p){ let d = String(p).replace(/\D/g,''); if(d.length > 10) d = d.slice(-10); return d; }
+function waLink(phone, text){ return `https://wa.me/91${cleanPhone(phone)}` + (text ? `?text=${encodeURIComponent(text)}` : ''); }
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+let toastT;
+function toast(msg){ const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove('show'), 2600); }
+
+function amountBlock(b){
+  if(num(b.total) <= 0) return '';
+  return `\nTotal: ${money(num(b.total))}\nPaid: ${money(num(b.paid))}\nDues: ${money(dues(b))}\n`;
+}
+function render(tpl, b){
+  const map = {
+    name: b.name, phone: b.phone, date: fmtDate(b.date), time: timeRange(b),
+    address: b.address || '-', total: num(b.total), paid: num(b.paid), dues: dues(b),
+    amountBlock: amountBlock(b)
+  };
+  return tpl.replace(/\{(\w+)\}/g, (m,k) => k in map ? map[k] : m);
+}
+
+/* 60 din se purana clear data: Google Sheet se hat jata hai, par is phone me save rehta hai (archived) */
+function shouldArchive(b){ return b.status === 'done' && dues(b) <= 0 && !!b.clearedAt && Date.now() - b.clearedAt > 60*DAY; }
+function autoClean(){
+  const old = bookings.filter(b => !b.archived && shouldArchive(b));
+  if(!old.length) return;
+  old.forEach(b => { b.archived = true; });
+  Store.save(bookings);
+  old.forEach(b => queueOp({t:'del', id:b.id}));
+}
+// Edit ke baad Sheet me bhejna (archived clear record ho to sirf phone me rahega)
+function pushUp(b){
+  if(b.archived){
+    if(b.status === 'done' && dues(b) <= 0) return;
+    b.archived = false; Store.save(bookings);
+  }
+  queueOp({t:'up', b});
+}
+
+/* ============ Form ============ */
+function updateDuesField(){
+  const total = num($('fTotal').value);
+  const row = $('paidDuesRow');
+  if(total > 0){
+    row.classList.add('show');
+    const paid = num($('fPaid').value);
+    $('fDues').value = Math.max(0, total - paid);
+  }else{
+    row.classList.remove('show');
+    $('fPaid').value = ''; $('fDues').value = 0;
+  }
+}
+$('fTotal').addEventListener('input', updateDuesField);
+$('fPaid').addEventListener('input', updateDuesField);
+
+function submitForm(){
+  const name = $('fName').value.trim();
+  const phone = cleanPhone($('fPhone').value);
+  const date = $('fDate').value;
+  const timeFrom = $('fFrom').value, timeTo = $('fTo').value;
+  if(!name) return toast('Kisaan ka naam likho');
+  if(phone.length !== 10) return toast('10 digit ka sahi phone number daalo');
+  if(!date) return toast('Kaam ki date chuno');
+  if(!timeFrom || !timeTo) return toast('Time se aur time tak dono chuno');
+  if(timeTo <= timeFrom) return toast('"Time tak" ka time "Time se" ke baad hona chahiye');
+  const total = num($('fTotal').value), paid = num($('fPaid').value);
+  if(total > 0 && paid > total) return toast('Paid amount total se zyada nahi ho sakta');
+
+  const b = {
+    id: uid(), name, phone, address: $('fAddress').value.trim(), date, timeFrom, timeTo,
+    total, paid: total > 0 ? paid : 0, status: 'pending', createdAt: Date.now(), completedAt: null, clearedAt: null
+  };
+  bookings.push(b); Store.save(bookings); queueOp({t:'up', b});
+
+  // WhatsApp message (client ke number par)
+  const msg = render(getTpl().booking, b);
+  window.open(waLink(b.phone, msg), '_blank');
+
+  // Form reset
+  ['fName','fPhone','fAddress','fTotal','fPaid'].forEach(i => $(i).value = '');
+  $('fDate').value = ''; $('fFrom').value = '07:00'; $('fTo').value = '10:00';
+  updateDuesField();
+  toast('Booking save ho gayi');
+  refresh(); setTab('list');
+}
+$('submitBtn').addEventListener('click', submitForm);
+
+/* ============ Rendering ============ */
+function sortByVisit(a,b){ return (a.date + a.timeFrom).localeCompare(b.date + b.timeFrom); }
+
+function matchQ(b, q){
+  const ql = q.toLowerCase(), qd = q.replace(/\D/g,'');
+  return String(b.name).toLowerCase().includes(ql) || (qd.length > 0 && String(b.phone).includes(qd));
+}
+
+function cardHTML(b, mode){
+  const d = dues(b), hasTotal = num(b.total) > 0;
+  const selected = b.date === todayStr() && b.status === 'pending';
+  const cls = ['k-card', selected ? 'today' : '', d > 0 ? 'hasdue' : ''].join(' ');
+  let badge = '';
+  if(mode === 'list') badge = selected ? '<span class="badge sel">Aaj ka kaam</span>' : '';
+  else if(d > 0) badge = '<span class="badge due">Dues baaki</span>';
+
+  const money3 = hasTotal ? `
+    <div class="k-money">
+      <div>Total<b>${money(num(b.total))}</b></div>
+      <div class="p">Paid<b>${money(num(b.paid))}</b></div>
+      <div class="d">Dues<b>${money(d)}</b></div>
+    </div>` : '';
+
+  let dueBox = '';
+  if(d > 0){
+    dueBox = `
+    <div class="due-box">
+      <h4>${I('alert')} ${esc(b.name)} ka ${money(d)} dues baaki hai</h4>
+      <textarea id="dm-${b.id}">${esc(render(getTpl().dues, b))}</textarea>
+      <button class="btn" data-act="duemsg" data-id="${b.id}">${I('send')} Dues Message Bhejo</button>
+      <div class="recv">
+        <input type="number" inputmode="decimal" min="0" placeholder="Payment mila ₹" id="rv-${b.id}">
+        <button data-act="recv" data-id="${b.id}">Payment Mila</button>
+      </div>
+    </div>`;
+  }
+
+  return `
+  <article class="${cls}">
+    <div class="k-head">
+      <div><div class="k-name">${esc(b.name)}</div><div class="k-phone">${I('phone')} ${esc(b.phone)}</div></div>
+      ${badge}
+    </div>
+    <div class="k-info">
+      <div>${I('calendar')} ${fmtDate(b.date)} &nbsp; ${I('clock')} ${timeRange(b)}</div>
+      ${b.address ? `<div>${I('pin')} ${esc(b.address)}</div>` : ''}
+    </div>
+    ${money3}
+    ${dueBox}
+    <div class="actions">
+      <a class="a-call" href="tel:+91${cleanPhone(b.phone)}">${I('phone')} Call</a>
+      <a class="a-wa" href="${waLink(b.phone)}" target="_blank" rel="noopener">${I('chat')} WhatsApp</a>
+      <button class="a-edit" data-act="edit" data-id="${b.id}">${I('edit')} Edit</button>
+      <button class="a-del" data-act="del" data-id="${b.id}">${I('trash')} Delete</button>
+    </div>
+    ${mode === 'list' ? `<button class="done-btn" data-act="done" data-id="${b.id}">${I('check')} Done (Kaam Ho Gaya)</button>` : ''}
+  </article>`;
+}
+
+// Date ke hisaab se section: har date par kitne kisaan hain, woh bhi dikhta hai
+function groupedHTML(list, openAll){
+  const t = todayStr(); const groups = {};
+  list.forEach(b => (groups[b.date] = groups[b.date] || []).push(b));
+  return Object.keys(groups).sort().map(d => {
+    const tag = d === t ? '<span class="badge sel">Aaj</span>' : (d < t ? '<span class="badge due">Purani date</span>' : '');
+    return `<div class="d-group">
+      <div class="d-head">${I('calendar')} ${fmtDate(d)} ${tag}<span class="d-cnt">${groups[d].length} kisaan</span></div>
+      ${groups[d].map(b => `
+        <details class="d-row"${openAll ? ' open' : ''}>
+          <summary><span class="d-name">${esc(b.name)}</span><span class="d-time">${fmtTime(b.timeFrom)}</span></summary>
+          ${cardHTML(b,'list')}
+        </details>`).join('')}
+    </div>`;
+  }).join('');
+}
+
+function renderList(){
+  const t = todayStr();
+  const pend = bookings.filter(b => b.status === 'pending').sort(sortByVisit);
+  const todayItems = pend.filter(b => b.date === t);
+  document.querySelectorAll('[data-filter]').forEach(p => p.classList.toggle('on', p.dataset.filter === listFilter));
+  $('pillToday').textContent = 'Today Visit (' + todayItems.length + ')';
+  $('pillAll').textContent = 'Sab Booking (' + pend.length + ')';
+
+  const q = ($('qList').value || '').trim(), qd = $('qDate').value;
+  const searching = !!(q || qd);
+  $('listFilters').style.display = searching ? 'none' : '';
+  $('qClear').style.display = searching ? '' : 'none';
+
+  if(searching){
+    const res = pend.filter(b => (!q || matchQ(b,q)) && (!qd || b.date === qd));
+    $('listBox').innerHTML = `<p class="note">${res.length} booking mili</p>` +
+      (res.length ? groupedHTML(res, res.length <= 3) : '<div class="empty">Koi booking nahi mili.</div>');
+    return;
+  }
+
+  if(listFilter === 'today'){
+    $('listBox').innerHTML = todayItems.length
+      ? todayItems.map(b => cardHTML(b,'list')).join('')
+      : `<div class="empty">${I('check-circle')} Aaj koi visit nahi hai.</div>`;
+    return;
+  }
+
+  $('listBox').innerHTML = pend.length
+    ? groupedHTML(pend, false)
+    : '<div class="empty">Abhi koi booking nahi hai. "Naya Booking" se add karo.</div>';
+}
+
+let doneLimit = 40;
+function renderDone(){
+  document.querySelectorAll('[data-dtab]').forEach(p => p.classList.toggle('on', p.dataset.dtab === doneTab));
+  const q = ($('qDone').value || '').trim();
+  let items = bookings.filter(b => b.status === 'done')
+    .filter(b => doneTab === 'dues' ? dues(b) > 0 : dues(b) <= 0)
+    .filter(b => !q || matchQ(b,q))
+    .sort((a,b) => (b.completedAt||0) - (a.completedAt||0));
+  const total = items.length;
+  items = items.slice(0, doneLimit);
+  const note = q ? `${total} record mile`
+    : (doneTab === 'dues' ? 'Jinka dues baaki hai — payment milne tak yahan rahenge.' : '');
+  $('doneNote').textContent = note; $('doneNote').style.display = note ? '' : 'none';
+  $('doneBox').innerHTML = items.length
+    ? items.map(b => cardHTML(b,'done')).join('') +
+      (total > doneLimit ? `<button class="btn btn-light" id="moreDone" style="width:100%">Aur dikhao (${total - doneLimit} baaki)</button>` : '')
+    : `<div class="empty">${q ? 'Koi record nahi mila.' : (doneTab === 'dues' ? I('check-circle') + ' Kisi ka dues baaki nahi' : 'Abhi koi complete kaam nahi hai.')}</div>`;
+}
+
+function renderCounts(){
+  const nPend = bookings.filter(b => b.status === 'pending' && b.date === todayStr()).length;
+  const nDue = bookings.filter(b => b.status === 'done' && dues(b) > 0).length;
+  const a = $('cntList'), c = $('cntDue');
+  a.textContent = nPend; a.classList.toggle('zero', !nPend);
+  c.style.display = nDue ? '' : 'none'; c.textContent = nDue;
+}
+
+function refresh(){ autoClean(); renderList(); renderDone(); renderCounts(); }
+
+/* ============ Tabs ============ */
+function setTab(t){
+  tab = t;
+  document.querySelectorAll('.section').forEach(s => s.classList.toggle('active', s.id === 'sec-' + t));
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+  window.scrollTo({top:0});
+}
+document.querySelectorAll('nav button').forEach(b => b.addEventListener('click', () => setTab(b.dataset.tab)));
+document.querySelectorAll('[data-filter]').forEach(p => p.addEventListener('click', () => { listFilter = p.dataset.filter; renderList(); }));
+document.querySelectorAll('[data-dtab]').forEach(p => p.addEventListener('click', () => { doneTab = p.dataset.dtab; renderDone(); }));
+
+/* ============ Search ============ */
+$('qList').addEventListener('input', renderList);
+$('qDate').addEventListener('change', renderList);
+$('qClear').addEventListener('click', () => { $('qList').value = ''; $('qDate').value = ''; renderList(); });
+$('qDone').addEventListener('input', () => { doneLimit = 40; renderDone(); });
+document.querySelectorAll('[data-dtab]').forEach(p => p.addEventListener('click', () => { doneLimit = 40; }));
+document.addEventListener('click', e => { if(e.target.closest('#moreDone')){ doneLimit += 40; renderDone(); } });
+
+/* ============ Edit ============ */
+let editId = null;
+function updateEditDues(){
+  const total = num($('eTotal').value);
+  $('eRow').style.display = total > 0 ? 'grid' : 'none';
+  if(total > 0) $('eDues').value = Math.max(0, total - num($('ePaid').value));
+}
+function openEdit(b){
+  editId = b.id;
+  $('eName').value = b.name; $('ePhone').value = b.phone; $('eAddress').value = b.address || '';
+  $('eDate').value = b.date; $('eFrom').value = b.timeFrom; $('eTo').value = b.timeTo;
+  $('eTotal').value = num(b.total) > 0 ? num(b.total) : ''; $('ePaid').value = num(b.paid) > 0 ? num(b.paid) : '';
+  updateEditDues();
+  $('editModal').classList.add('show');
+}
+function closeEdit(){ $('editModal').classList.remove('show'); editId = null; }
+function saveEdit(){
+  const b = bookings.find(x => x.id === editId); if(!b) return closeEdit();
+  const name = $('eName').value.trim(), phone = cleanPhone($('ePhone').value), date = $('eDate').value;
+  const timeFrom = $('eFrom').value, timeTo = $('eTo').value;
+  if(!name) return toast('Kisaan ka naam likho');
+  if(phone.length !== 10) return toast('10 digit ka sahi phone number daalo');
+  if(!date) return toast('Kaam ki date chuno');
+  if(!timeFrom || !timeTo) return toast('Time se aur time tak dono chuno');
+  if(timeTo <= timeFrom) return toast('"Time tak" ka time "Time se" ke baad hona chahiye');
+  const total = num($('eTotal').value), paid = num($('ePaid').value);
+  if(total > 0 && paid > total) return toast('Paid amount total se zyada nahi ho sakta');
+  Object.assign(b, { name, phone, address: $('eAddress').value.trim(), date, timeFrom, timeTo, total, paid: total > 0 ? paid : 0 });
+  if(b.status === 'done') b.clearedAt = dues(b) <= 0 ? (b.clearedAt || Date.now()) : null;
+  Store.save(bookings); pushUp(b); closeEdit(); refresh(); toast('Edit save ho gaya');
+}
+$('eTotal').addEventListener('input', updateEditDues);
+$('ePaid').addEventListener('input', updateEditDues);
+$('eSave').addEventListener('click', saveEdit);
+$('eCancel').addEventListener('click', closeEdit);
+$('editModal').addEventListener('click', e => { if(e.target === $('editModal')) closeEdit(); });
+
+/* ============ Card actions ============ */
+document.addEventListener('click', e => {
+  const btn = e.target.closest('[data-act]'); if(!btn) return;
+  const id = btn.dataset.id; const b = bookings.find(x => x.id === id); if(!b) return;
+  const act = btn.dataset.act;
+  if(act === 'edit'){ openEdit(b); return; }
+
+  if(act === 'del'){
+    if(!confirm(`${b.name} ka data delete kar do?`)) return;
+    bookings = bookings.filter(x => x.id !== id); Store.save(bookings); queueOp({t:'del', id}); refresh(); toast('Delete ho gaya');
+  }
+  else if(act === 'done'){
+    b.status = 'done'; b.completedAt = Date.now();
+    b.clearedAt = dues(b) <= 0 ? Date.now() : null;
+    Store.save(bookings); queueOp({t:'up', b}); refresh();
+    if(dues(b) > 0){ doneTab = 'dues'; toast('Dues baaki hai — Complete > Dues me gaya'); }
+    else { doneTab = 'clear'; toast('Kaam complete'); }
+    renderDone();
+  }
+  else if(act === 'duemsg'){
+    const ta = $('dm-' + id); const text = ta ? ta.value : render(getTpl().dues, b);
+    window.open(waLink(b.phone, text), '_blank');
+  }
+  else if(act === 'recv'){
+    const inp = $('rv-' + id); const amt = num(inp && inp.value);
+    if(amt <= 0) return toast('Payment amount likho');
+    const d = dues(b);
+    b.paid = num(b.paid) + Math.min(amt, d);
+    if(dues(b) <= 0){ b.clearedAt = Date.now(); toast('Dues clear — Clear section me chala gaya'); }
+    else toast(`Payment add ho gaya, ab ${money(dues(b))} baaki`);
+    Store.save(bookings); queueOp({t:'up', b}); refresh();
+  }
+});
+
+/* ============ Message settings ============ */
+function openSettings(){ updateSyncText(); const t = getTpl(); $('tplBooking').value = t.booking; $('tplDues').value = t.dues; $('setModal').classList.add('show'); }
+$('setBtn').addEventListener('click', openSettings);
+$('tplClose').addEventListener('click', () => $('setModal').classList.remove('show'));
+$('setModal').addEventListener('click', e => { if(e.target === $('setModal')) $('setModal').classList.remove('show'); });
+$('tplSave').addEventListener('click', () => {
+  const tpl = { booking: $('tplBooking').value, dues: $('tplDues').value };
+  localStorage.setItem(TPL_KEY, JSON.stringify(tpl)); queueOp({t:'tpl', tpl});
+  $('setModal').classList.remove('show'); refresh(); toast('Message save ho gaya');
+});
+$('tplReset').addEventListener('click', () => { $('tplBooking').value = DEFAULT_TPL.booking; $('tplDues').value = DEFAULT_TPL.dues; });
+
+/* ============ PWA ============ */
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredPrompt = e; $('installBtn').style.display = 'inline-block'; });
+$('installBtn').addEventListener('click', async () => {
+  if(!deferredPrompt) return; deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; $('installBtn').style.display = 'none';
+});
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
+
+/* ============ Google Sheet sync + Login ============ */
+const API_URL = 'https://script.google.com/macros/s/AKfycbyUgscYUDRsyeRNibL4RQVWivuZhigOMfWv9lkgmGQxjkD3v5StNt_GBcKemOgJH6ZPbg/exec';   // <-- Apps Script Web App ka /exec link yahan paste karo (ya login screen par daal sakte ho)
+const TOKEN_KEY = 'akds_token_v1', URL_KEY = 'akds_api_url', QUEUE_KEY = 'akds_queue_v1';
+const apiUrl = () => API_URL || localStorage.getItem(URL_KEY) || '';
+const hasToken = () => !!localStorage.getItem(TOKEN_KEY);
+let queue = (() => { try{ return JSON.parse(localStorage.getItem(QUEUE_KEY)) || []; }catch(e){ return []; } })();
+let lastSync = 0, flushing = false, pulling = false, mutSeq = 0;
+const saveQueue = () => { try{ localStorage.setItem(QUEUE_KEY, JSON.stringify(queue)); }catch(e){} };
+
+async function api(action, data, useToken = true){
+  const url = apiUrl();
+  if(!url){ const e = new Error('Server link set nahi hai'); e.code = 'NOURL'; throw e; }
+  const body = Object.assign({ action }, data || {});
+  if(useToken) body.token = localStorage.getItem(TOKEN_KEY) || '';
+  let res; const ctl = new AbortController(); setTimeout(() => ctl.abort(), 30000);
+  try{
+    // text/plain => browser preflight (CORS) nahi karta, Apps Script ke saath yahi sahi tareeka hai
+    res = await fetch(url, { method:'POST', headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: JSON.stringify(body), signal: ctl.signal });
+  }catch(_){ const e = new Error('Internet ya server link check karo'); e.code = 'NET'; throw e; }
+  let j;
+  try{ j = await res.json(); }
+  catch(_){ const e = new Error('Server ka jawab galat hai. Deploy me "Who has access = Anyone" rakho'); e.code = 'BADRESP'; throw e; }
+  if(!j.ok){ const e = new Error(j.error || 'Error'); e.code = j.code || 'ERR'; throw e; }
+  return j;
+}
+
+function queueOp(op){ mutSeq++; queue.push(op); saveQueue(); flush(); }
+
+function authLost(){
+  localStorage.removeItem(TOKEN_KEY);
+  showLogin('Dobara login karo');
+}
+
+async function flush(){
+  if(flushing || !queue.length || !navigator.onLine || !hasToken() || !apiUrl()) return;
+  flushing = true;
+  try{
+    while(queue.length){
+      const n = Math.min(20, queue.length);
+      await api('batch', { ops: queue.slice(0, n) });
+      queue.splice(0, n); saveQueue();
+    }
+    lastSync = Date.now();
+  }catch(e){
+    if(e.code === 'AUTH') authLost();
+  }
+  flushing = false; updateSyncText();
+}
+
+async function pull(){
+  if(pulling || !hasToken() || !apiUrl()) return;
+  pulling = true;
+  try{
+    await flush();
+    if(queue.length) return;           // unsynced changes hain, unhe overwrite mat karo
+    const seq = mutSeq;
+    const j = await api('list');
+    if(seq !== mutSeq || queue.length) return;   // fetch ke dauran naya change hua, to purana snapshot mat lagao
+    const server = j.bookings || [];
+    const sIds = new Set(server.map(x => x.id));
+    // 60 din+ purane clear record sirf phone me rehte hain (Sheet se hat chuke), unhe bachao
+    const keep = bookings.filter(b => !sIds.has(b.id) && (b.archived || shouldArchive(b)));
+    keep.forEach(b => { b.archived = true; });
+    bookings = server.concat(keep); Store.save(bookings);
+    if(j.templates) localStorage.setItem(TPL_KEY, JSON.stringify(j.templates));
+    lastSync = Date.now();
+    refresh();
+  }catch(e){
+    if(e.code === 'AUTH') authLost();
+  }finally{ pulling = false; updateSyncText(); }
+}
+
+function updateSyncText(){
+  const el = $('syncStatus'); if(!el) return;
+  el.textContent = queue.length
+    ? queue.length + ' change abhi Google Sheet me nahi gaye (internet aate hi chale jayenge)'
+    : (lastSync ? 'Google Sheet se sync hai · ' + new Date(lastSync).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}) : 'Abhi sync nahi hua');
+}
+
+/* ---- Login ---- */
+function showLogin(msg){
+  $('login').classList.add('show');
+  $('lgErr').textContent = msg || '';
+  $('lgPw').value = '';
+  $('lgUrlWrap').style.display = API_URL ? 'none' : 'block';
+  if(!API_URL) $('lgUrl').value = localStorage.getItem(URL_KEY) || '';
+  setTimeout(() => $('lgPw').focus(), 50);
+}
+function hideLogin(){ $('login').classList.remove('show'); }
+
+async function doLogin(){
+  const pw = $('lgPw').value;
+  const urlIn = $('lgUrl').value.trim();
+  if(!API_URL && urlIn) localStorage.setItem(URL_KEY, urlIn);
+  if(!apiUrl()) return $('lgErr').textContent = 'Server link daalo';
+  if(!pw) return $('lgErr').textContent = 'Password likho';
+  const btn = $('lgBtn'); btn.disabled = true; $('lgErr').textContent = '';
+  try{
+    const j = await api('login', { password: pw }, false);
+    localStorage.setItem(TOKEN_KEY, j.token);
+    hideLogin(); $('lgPw').value = '';
+    if(j.defaultPw) setTimeout(() => toast('Default password chal raha hai. Settings se badal lo'), 400);
+    pull();
+  }catch(e){
+    $('lgErr').textContent = e.message;
+  }finally{ btn.disabled = false; }
+}
+$('lgBtn').addEventListener('click', doLogin);
+$('lgPw').addEventListener('keydown', e => { if(e.key === 'Enter') doLogin(); });
+
+/* ---- Logout ---- */
+$('logoutBtn').addEventListener('click', () => {
+  const nArch = bookings.filter(b => b.archived).length;
+  if(queue.length && !confirm('Kuch changes abhi sync nahi hue. Logout karne par woh kho jayenge. Phir bhi logout karein?')) return;
+  if(nArch && !confirm(nArch + ' purane (60 din+) record sirf is phone me save hain. Logout karne par woh mit jayenge. Phir bhi logout karein?')) return;
+  if(!queue.length && !nArch && !confirm('Logout karein?')) return;
+  [TOKEN_KEY, KEY, QUEUE_KEY].forEach(k => localStorage.removeItem(k));
+  location.reload();
+});
+$('syncNow').addEventListener('click', async () => { toast('Sync ho raha hai...'); await pull(); toast(queue.length ? 'Sync nahi ho paya' : 'Sync ho gaya'); });
+
+/* ---- Password change ---- */
+$('pwSave').addEventListener('click', async () => {
+  const o = $('pwOld').value, n = $('pwNew').value, n2 = $('pwNew2').value;
+  if(!o) return toast('Purana password likho');
+  if(n.length < 6) return toast('Naya password kam se kam 6 ka ho');
+  if(n !== n2) return toast('Dono naye password same nahi hain');
+  if(n === o) return toast('Naya password purane se alag rakho');
+  const btn = $('pwSave'); btn.disabled = true;
+  try{
+    await api('changePassword', { oldPassword: o, newPassword: n });
+    ['pwOld','pwNew','pwNew2'].forEach(i => $(i).value = '');
+    toast('Password badal gaya');
+  }catch(e){
+    if(e.code === 'AUTH') authLost(); else toast(e.message);
+  }finally{ btn.disabled = false; }
+});
+
+document.addEventListener('visibilitychange', () => { if(!document.hidden) pull(); });
+window.addEventListener('online', () => { flush(); });
+
+/* ============ Start ============ */
+$('fDate').value = '';
+refresh();
+setInterval(refresh, 60*60*1000); // har ghante auto-clean + refresh
+if(hasToken()){ hideLogin(); pull(); } else { showLogin(); }
+</script>
+</body>
+</html>

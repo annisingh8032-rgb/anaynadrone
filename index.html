@@ -154,7 +154,15 @@ nav .ic .i{width:24px;height:24px}
 .d-row summary::after{content:"+";color:var(--g700);font-size:20px;font-weight:800;margin-left:6px}
 .d-row[open] summary::after{content:"\2212"}
 .d-row[open] summary{background:var(--g100)}
-.d-time{margin-left:auto;color:var(--mute);font-weight:600;font-size:13px}
+.d-time{margin-left:auto;color:var(--mute);font-weight:600;font-size:13px;white-space:nowrap}
+.d-row summary{padding:8px 10px 8px 12px;min-height:56px}
+.d-row summary::after{margin-left:2px}
+.d-main{display:flex;flex-direction:column;gap:2px;min-width:0}
+.d-name{font-size:15.5px;line-height:1.2}
+.d-sub{display:flex;align-items:center;flex-wrap:wrap;gap:6px;font-size:13px;font-weight:600;color:var(--mute)}
+.d-due{background:#fde8e6;color:var(--red);border-radius:99px;padding:0 8px;font-size:12px;font-weight:800;line-height:18px}
+.d-call{flex:none;display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;background:var(--g700);color:#fff;text-decoration:none}
+.d-call .i{width:1.1em;height:1.1em}
 .d-row .k-card{margin:8px;border-left-width:6px}
 .d-head .badge.sel{background:var(--yellow)}
 .d-head .badge.due{background:#fff}
@@ -666,7 +674,7 @@ function matchQ(b, q){
   return String(b.name).toLowerCase().includes(ql) || (qd.length > 0 && String(b.phone).includes(qd));
 }
 
-function cardHTML(b, mode){
+function cardHTML(b, mode, grouped){
   const d = dues(b), hasTotal = totalOf(b) > 0;
   const selected = b.date === todayStr() && b.status === 'pending';
   const cls = ['k-card', selected ? 'today' : '', d > 0 ? 'hasdue' : ''].join(' ');
@@ -713,7 +721,8 @@ function cardHTML(b, mode){
       <button class="a-edit" data-act="edit" data-id="${b.id}">${I('edit')} Edit</button>
       <button class="a-del" data-act="del" data-id="${b.id}">${I('trash')} Delete</button>
     </div>
-    ${mode === 'list' ? `<button class="done-btn" data-act="done" data-id="${b.id}">${I('check')} Done (Kaam Ho Gaya)</button>` : ''}
+    ${mode === 'list' && !grouped ? `<button class="done-btn" data-act="done" data-id="${b.id}">${I('check')} Done (Kaam Ho Gaya)</button>` : ''}
+    ${mode === 'list' && grouped && b.date !== todayStr() ? `<button class="done-btn" data-act="totoday" data-id="${b.id}">${I('calendar')} Aaj ki Booking Me Karo</button>` : ''}
   </article>`;
 }
 
@@ -727,8 +736,15 @@ function groupedHTML(list, openAll){
       <div class="d-head">${I('calendar')} ${fmtDate(d)} ${tag}<span class="d-cnt">${groups[d].length} kisaan</span></div>
       ${groups[d].map(b => `
         <details class="d-row"${openAll ? ' open' : ''}>
-          <summary><span class="d-name">${esc(b.name)}</span><span class="d-time">${fmtTime(b.timeFrom)}</span></summary>
-          ${cardHTML(b,'list')}
+          <summary>
+            <span class="d-main">
+              <span class="d-name">${esc(b.name)}</span>
+              <span class="d-sub">${esc(b.phone)}${dues(b) > 0 ? `<span class="d-due">Dues ${money(dues(b))}</span>` : ''}</span>
+            </span>
+            <span class="d-time">${fmtTime(b.timeFrom)}</span>
+            <a class="d-call" href="tel:+91${cleanPhone(b.phone)}" aria-label="Call ${esc(b.name)}">${I('phone')}</a>
+          </summary>
+          ${cardHTML(b,'list',true)}
         </details>`).join('')}
     </div>`;
   }).join('');
@@ -890,6 +906,11 @@ document.addEventListener('click', e => {
   if(act === 'del'){
     if(!confirm(`${b.name} ka data delete kar do?`)) return;
     bookings = bookings.filter(x => x.id !== id); Store.save(bookings); queueOp({t:'del', id}); refresh(); toast('Delete ho gaya');
+  }
+  else if(act === 'totoday'){
+    b.date = todayStr();
+    Store.save(bookings); pushUp(b); refresh();
+    toast('Aaj ki booking me chala gaya');
   }
   else if(act === 'done'){
     b.status = 'done'; b.completedAt = Date.now();

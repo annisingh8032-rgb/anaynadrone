@@ -560,24 +560,27 @@ function toast(msg){ const t = $('toast'); t.textContent = msg; t.classList.add(
 function amountBlock(b){
   let s = '';
   if(num(b.tanki) > 0) s += `\nTanki: ${num(b.tanki)} (₹${TANKI_RATE} per tanki)\nTanki Amount: ${money(tankiAmt(b))}`;
+  // Customer ne payment nahi kiya to neeche "Tanki amount not paid" dikhega
+  if(tankiAmt(b) > 0 && num(b.paid) <= 0) s += `\nTanki amount not paid`;
   if(num(b.total) > 0){
     s += `\nTotal: ${money(num(b.total))}\nPaid: ${money(num(b.paid))}\nDues: ${money(dues(b))}`;
   }else if(tankiAmt(b) > 0){
     s += num(b.paid) > 0
       ? `\nPaid: ${money(num(b.paid))}\nDues: ${money(dues(b))}`
-      : `\nStatus: Not Paid`;
+      : '';
   }
   return s ? s + '\n' : '';
 }
 function render(tpl, b, extra){
   const map = Object.assign({
     name: b.name, phone: b.phone, date: fmtDate(b.date), time: timeRange(b),
-    address: b.address || '-', total: totalOf(b), paid: num(b.paid), dues: dues(b),
+    address: b.address || '', total: totalOf(b), paid: num(b.paid), dues: dues(b),
     tanki: num(b.tanki), tankiAmount: tankiAmt(b), tankiRate: TANKI_RATE,
     amountBlock: amountBlock(b)
   }, extra || {});
   let out = tpl.replace(/\{(\w+)\}/g, (m,k) => k in map ? map[k] : m);
   if(!b.timeFrom) out = out.replace(/^Time:[ \t]*\r?\n/gm, '');   // time nahi diya to "Time:" line hata do
+  if(!(b.address||'').trim()) out = out.replace(/^Address:[ \t]*\r?\n/gm, '');   // address nahi diya to "Address:" line hata do
   return out;
 }
 

@@ -214,6 +214,14 @@ nav button{min-height:58px}
 nav .cnt{position:static;display:inline-block;margin-left:5px;min-width:19px;text-align:center;font-size:11px;padding:1px 6px;vertical-align:1px}
 nav .cnt.zero{background:var(--g100);color:var(--mute)}
 .d-cnt{font-size:12px;white-space:nowrap}
+
+/* ===== v5: settings tabs + X ===== */
+.sheet-head{position:sticky;top:-16px;z-index:2;background:#fff;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 0 8px;margin-top:-12px}
+.sheet-head h3{margin:0}
+.x-btn{background:var(--g100);border:1px solid var(--line);border-radius:10px;min-width:44px;min-height:44px;color:var(--g900);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.x-btn .i{margin:0;width:22px;height:22px}
+.spanel[hidden]{display:none}
+.syncline{font-size:15px;font-weight:700;color:var(--g800);margin-bottom:12px}
 </style>
 </head>
 <body>
@@ -235,6 +243,7 @@ nav .cnt.zero{background:var(--g100);color:var(--mute)}
   <symbol id="i-chat" viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></symbol>
   <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></symbol>
   <symbol id="i-edit" viewBox="0 0 24 24"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
   <symbol id="i-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
   <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></symbol>
   <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></symbol>
@@ -297,12 +306,12 @@ nav .cnt.zero{background:var(--g100);color:var(--mute)}
       </div>
       <div class="row">
         <div class="field">
-          <label for="fFrom">Time se</label>
-          <input id="fFrom" type="time" value="07:00">
+          <label for="fFrom">Time se <small>(optional)</small></label>
+          <input id="fFrom" type="time">
         </div>
         <div class="field">
-          <label for="fTo">Time tak</label>
-          <input id="fTo" type="time" value="10:00">
+          <label for="fTo">Time tak <small>(optional)</small></label>
+          <input id="fTo" type="time">
         </div>
       </div>
       <div class="field">
@@ -345,8 +354,8 @@ nav .cnt.zero{background:var(--g100);color:var(--mute)}
       <input id="qDone" type="search" placeholder="Naam ya phone se khojo" autocomplete="off">
     </div>
     <div class="filters">
-      <button class="pill on" data-dtab="clear"><svg class="i" aria-hidden="true"><use href="#i-check-circle"/></svg> Clear</button>
-      <button class="pill" data-dtab="dues"><svg class="i" aria-hidden="true"><use href="#i-alert"/></svg> Dues</button>
+      <button class="pill on" data-dtab="clear"><svg class="i" aria-hidden="true"><use href="#i-check-circle"/></svg> Clear <span id="cClear"></span></button>
+      <button class="pill" data-dtab="dues"><svg class="i" aria-hidden="true"><use href="#i-alert"/></svg> Dues <span id="cDues"></span></button>
     </div>
     <p class="note" id="doneNote"></p>
     <div id="doneBox"></div>
@@ -359,45 +368,62 @@ nav .cnt.zero{background:var(--g100);color:var(--mute)}
   <button data-tab="done"><span class="ic"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg></span>Kaam Complete<span class="cnt" id="cntDue" style="display:none"></span></button>
 </nav>
 
-<!-- Message settings -->
+<!-- Settings -->
 <div class="modal" id="setModal">
   <div class="sheet">
-    <h3><svg class="i" aria-hidden="true"><use href="#i-settings"/></svg> Message Settings</h3>
-    <p class="note">Yeh words use kar sakte ho: {name} {phone} {date} {time} {address} {total} {paid} {dues} {amountBlock}</p>
-    <div class="field">
-      <label for="tplBooking">Booking Successful Message</label>
-      <textarea id="tplBooking"></textarea>
+    <div class="sheet-head">
+      <h3><svg class="i" aria-hidden="true"><use href="#i-settings"/></svg> Settings</h3>
+      <button class="x-btn" id="tplClose" aria-label="Band karo"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button>
     </div>
-    <div class="field">
-      <label for="tplDues">Dues Message (custom)</label>
-      <textarea id="tplDues"></textarea>
+    <div class="filters">
+      <button class="pill on" data-stab="msg">Message</button>
+      <button class="pill" data-stab="pw">Password</button>
+      <button class="pill" data-stab="sync">Sync</button>
     </div>
-    <div class="row">
-      <button class="btn btn-light" id="tplReset">Default Karo</button>
-      <button class="btn btn-primary" id="tplSave" style="padding:12px">Save</button>
+
+    <div class="spanel" id="sp-msg">
+      <p class="note">Yeh words use kar sakte ho: {name} {phone} {date} {time} {address} {total} {paid} {dues} {amountBlock} {received} {payDate} {statusLine}</p>
+      <div class="field">
+        <label for="tplBooking">Booking Successful Message</label>
+        <textarea id="tplBooking"></textarea>
+      </div>
+      <div class="field">
+        <label for="tplDues">Dues Message (custom)</label>
+        <textarea id="tplDues"></textarea>
+      </div>
+      <div class="field">
+        <label for="tplPay">Payment Mila Message <small>(payment add karne par jayega)</small></label>
+        <textarea id="tplPay"></textarea>
+      </div>
+      <div class="row">
+        <button class="btn btn-light" id="tplReset">Default Karo</button>
+        <button class="btn btn-primary" id="tplSave" style="padding:12px">Save</button>
+      </div>
     </div>
-    <hr class="sep">
-    <h3><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg> Admin Password Badlo</h3>
-    <div class="field">
-      <label for="pwOld">Purana Password</label>
-      <input id="pwOld" type="password" autocomplete="current-password">
+
+    <div class="spanel" id="sp-pw" hidden>
+      <div class="field">
+        <label for="pwOld">Purana Password</label>
+        <input id="pwOld" type="password" autocomplete="current-password">
+      </div>
+      <div class="field">
+        <label for="pwNew">Naya Password <small>(kam se kam 6 akshar/number)</small></label>
+        <input id="pwNew" type="password" autocomplete="new-password">
+      </div>
+      <div class="field">
+        <label for="pwNew2">Naya Password Dobara</label>
+        <input id="pwNew2" type="password" autocomplete="new-password">
+      </div>
+      <button class="btn btn-primary" id="pwSave">Password Badlo</button>
     </div>
-    <div class="field">
-      <label for="pwNew">Naya Password <small>(kam se kam 6 akshar/number)</small></label>
-      <input id="pwNew" type="password" autocomplete="new-password">
+
+    <div class="spanel" id="sp-sync" hidden>
+      <p class="syncline" id="syncStatus"></p>
+      <div class="row">
+        <button class="btn btn-light" id="syncNow"><svg class="i" aria-hidden="true"><use href="#i-refresh"/></svg> Sync Karo</button>
+        <button class="btn btn-light" id="logoutBtn"><svg class="i" aria-hidden="true"><use href="#i-logout"/></svg> Logout</button>
+      </div>
     </div>
-    <div class="field">
-      <label for="pwNew2">Naya Password Dobara</label>
-      <input id="pwNew2" type="password" autocomplete="new-password">
-    </div>
-    <button class="btn btn-primary" id="pwSave">Password Badlo</button>
-    <hr class="sep">
-    <p class="note" id="syncStatus"></p>
-    <div class="row">
-      <button class="btn btn-light" id="syncNow"><svg class="i" aria-hidden="true"><use href="#i-refresh"/></svg> Sync Karo</button>
-      <button class="btn btn-light" id="logoutBtn"><svg class="i" aria-hidden="true"><use href="#i-logout"/></svg> Logout</button>
-    </div>
-    <button class="btn btn-light" id="tplClose" style="width:100%;margin-top:8px">Band Karo</button>
   </div>
 </div>
 
@@ -410,8 +436,8 @@ nav .cnt.zero{background:var(--g100);color:var(--mute)}
     <div class="field"><label for="eAddress">Address <small>(optional)</small></label><textarea id="eAddress" rows="2"></textarea></div>
     <div class="field"><label for="eDate">Kis din kaam hai</label><input id="eDate" type="date"></div>
     <div class="row">
-      <div class="field"><label for="eFrom">Time se</label><input id="eFrom" type="time"></div>
-      <div class="field"><label for="eTo">Time tak</label><input id="eTo" type="time"></div>
+      <div class="field"><label for="eFrom">Time se <small>(optional)</small></label><input id="eFrom" type="time"></div>
+      <div class="field"><label for="eTo">Time tak <small>(optional)</small></label><input id="eTo" type="time"></div>
     </div>
     <div class="field"><label for="eTotal">Total Amount ₹ <small>(optional)</small></label><input id="eTotal" type="number" inputmode="decimal" min="0"></div>
     <div class="row" id="eRow" style="display:none">
@@ -463,6 +489,19 @@ Paid: ₹{paid}
 Dues: ₹{dues}
 
 Kripya jaldi payment kar dein.
+Dhanyawad.`,
+  pay:
+`*Ananya Krishi Drone Seva*
+
+Namaste {name} ji,
+Aapka ₹{received} ka payment {payDate} ko mil gaya hai.
+
+Kaam ki date: {date}
+Total Amount: ₹{total}
+Paid Amount: ₹{paid} ({payDate} tak)
+Dues Amount: ₹{dues} ({payDate} tak)
+
+{statusLine}
 Dhanyawad.`
 };
 
@@ -496,7 +535,10 @@ function fmtTime(t){
   let [h,m] = t.split(':').map(Number); const ap = h >= 12 ? 'PM' : 'AM';
   h = h % 12 || 12; return `${h}:${String(m).padStart(2,'0')} ${ap}`;
 }
-function timeRange(b){ return `${fmtTime(b.timeFrom)} se ${fmtTime(b.timeTo)} tak`; }
+function timeRange(b){
+  if(!b.timeFrom) return '';
+  return b.timeTo ? `${fmtTime(b.timeFrom)} se ${fmtTime(b.timeTo)} tak` : `${fmtTime(b.timeFrom)} se`;
+}
 function num(v){ const n = parseFloat(v); return isNaN(n) || n < 0 ? 0 : n; }
 function money(n){ return '₹' + (Math.round(n*100)/100).toLocaleString('en-IN'); }
 function dues(b){ return Math.max(0, num(b.total) - num(b.paid)); }
@@ -510,13 +552,15 @@ function amountBlock(b){
   if(num(b.total) <= 0) return '';
   return `\nTotal: ${money(num(b.total))}\nPaid: ${money(num(b.paid))}\nDues: ${money(dues(b))}\n`;
 }
-function render(tpl, b){
-  const map = {
+function render(tpl, b, extra){
+  const map = Object.assign({
     name: b.name, phone: b.phone, date: fmtDate(b.date), time: timeRange(b),
     address: b.address || '-', total: num(b.total), paid: num(b.paid), dues: dues(b),
     amountBlock: amountBlock(b)
-  };
-  return tpl.replace(/\{(\w+)\}/g, (m,k) => k in map ? map[k] : m);
+  }, extra || {});
+  let out = tpl.replace(/\{(\w+)\}/g, (m,k) => k in map ? map[k] : m);
+  if(!b.timeFrom) out = out.replace(/^Time:[ \t]*\r?\n/gm, '');   // time nahi diya to "Time:" line hata do
+  return out;
 }
 
 /* 60 din se purana clear data: Google Sheet se hat jata hai, par is phone me save rehta hai (archived) */
@@ -561,8 +605,8 @@ function submitForm(){
   if(!name) return toast('Kisaan ka naam likho');
   if(phone.length !== 10) return toast('10 digit ka sahi phone number daalo');
   if(!date) return toast('Kaam ki date chuno');
-  if(!timeFrom || !timeTo) return toast('Time se aur time tak dono chuno');
-  if(timeTo <= timeFrom) return toast('"Time tak" ka time "Time se" ke baad hona chahiye');
+  if(timeTo && !timeFrom) return toast('"Time tak" bharna hai to pehle "Time se" bharo');
+  if(timeFrom && timeTo && timeTo <= timeFrom) return toast('"Time tak" ka time "Time se" ke baad hona chahiye');
   const total = num($('fTotal').value), paid = num($('fPaid').value);
   if(total > 0 && paid > total) return toast('Paid amount total se zyada nahi ho sakta');
 
@@ -578,7 +622,7 @@ function submitForm(){
 
   // Form reset
   ['fName','fPhone','fAddress','fTotal','fPaid'].forEach(i => $(i).value = '');
-  $('fDate').value = ''; $('fFrom').value = '07:00'; $('fTo').value = '10:00';
+  $('fDate').value = ''; $('fFrom').value = ''; $('fTo').value = '';
   updateDuesField();
   toast('Booking save ho gayi');
   refresh(); setTab('list');
@@ -613,7 +657,6 @@ function cardHTML(b, mode){
     dueBox = `
     <div class="due-box">
       <h4>${I('alert')} ${esc(b.name)} ka ${money(d)} dues baaki hai</h4>
-      <textarea id="dm-${b.id}">${esc(render(getTpl().dues, b))}</textarea>
       <button class="btn" data-act="duemsg" data-id="${b.id}">${I('send')} Dues Message Bhejo</button>
       <div class="recv">
         <input type="number" inputmode="decimal" min="0" placeholder="Payment mila ₹" id="rv-${b.id}">
@@ -629,7 +672,7 @@ function cardHTML(b, mode){
       ${badge}
     </div>
     <div class="k-info">
-      <div>${I('calendar')} ${fmtDate(b.date)} &nbsp; ${I('clock')} ${timeRange(b)}</div>
+      <div>${I('calendar')} ${fmtDate(b.date)}${timeRange(b) ? ` &nbsp; ${I('clock')} ${timeRange(b)}` : ''}</div>
       ${b.address ? `<div>${I('pin')} ${esc(b.address)}</div>` : ''}
     </div>
     ${money3}
@@ -696,6 +739,9 @@ function renderList(){
 let doneLimit = 40;
 function renderDone(){
   document.querySelectorAll('[data-dtab]').forEach(p => p.classList.toggle('on', p.dataset.dtab === doneTab));
+  const doneAll = bookings.filter(b => b.status === 'done');
+  $('cClear').textContent = '(' + doneAll.filter(b => dues(b) <= 0).length + ')';
+  $('cDues').textContent = '(' + doneAll.filter(b => dues(b) > 0).length + ')';
   const q = ($('qDone').value || '').trim();
   let items = bookings.filter(b => b.status === 'done')
     .filter(b => doneTab === 'dues' ? dues(b) > 0 : dues(b) <= 0)
@@ -723,15 +769,38 @@ function renderCounts(){
 function refresh(){ autoClean(); renderList(); renderDone(); renderCounts(); }
 
 /* ============ Tabs ============ */
-function setTab(t){
+function setTab(t, fromPop){
+  const changed = t !== tab;
   tab = t;
   document.querySelectorAll('.section').forEach(s => s.classList.toggle('active', s.id === 'sec-' + t));
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
   window.scrollTo({top:0});
+  if(changed && !fromPop) history.pushState({ tab: t }, '');
 }
 document.querySelectorAll('nav button').forEach(b => b.addEventListener('click', () => setTab(b.dataset.tab)));
 document.querySelectorAll('[data-filter]').forEach(p => p.addEventListener('click', () => { listFilter = p.dataset.filter; renderList(); }));
 document.querySelectorAll('[data-dtab]').forEach(p => p.addEventListener('click', () => { doneTab = p.dataset.dtab; renderDone(); }));
+
+/* ============ Back button (section by section) + modals ============ */
+let modalPushed = false;
+function pushModal(){ history.pushState({ tab, modal: 1 }, ''); modalPushed = true; }
+function hideModals(){ $('setModal').classList.remove('show'); $('editModal').classList.remove('show'); }
+function closeModals(){
+  hideModals();
+  if(modalPushed){ modalPushed = false; history.back(); }
+}
+window.addEventListener('popstate', e => {
+  modalPushed = false; editId = null; hideModals();
+  const st = e.state;
+  if(st && st.tab && st.tab !== tab) setTab(st.tab, true);
+});
+
+/* ============ Settings tabs ============ */
+function setSTab(n){
+  document.querySelectorAll('[data-stab]').forEach(p => p.classList.toggle('on', p.dataset.stab === n));
+  ['msg','pw','sync'].forEach(x => { $('sp-' + x).hidden = x !== n; });
+}
+document.querySelectorAll('[data-stab]').forEach(p => p.addEventListener('click', () => setSTab(p.dataset.stab)));
 
 /* ============ Search ============ */
 $('qList').addEventListener('input', renderList);
@@ -754,9 +823,9 @@ function openEdit(b){
   $('eDate').value = b.date; $('eFrom').value = b.timeFrom; $('eTo').value = b.timeTo;
   $('eTotal').value = num(b.total) > 0 ? num(b.total) : ''; $('ePaid').value = num(b.paid) > 0 ? num(b.paid) : '';
   updateEditDues();
-  $('editModal').classList.add('show');
+  $('editModal').classList.add('show'); pushModal();
 }
-function closeEdit(){ $('editModal').classList.remove('show'); editId = null; }
+function closeEdit(){ editId = null; closeModals(); }
 function saveEdit(){
   const b = bookings.find(x => x.id === editId); if(!b) return closeEdit();
   const name = $('eName').value.trim(), phone = cleanPhone($('ePhone').value), date = $('eDate').value;
@@ -764,8 +833,8 @@ function saveEdit(){
   if(!name) return toast('Kisaan ka naam likho');
   if(phone.length !== 10) return toast('10 digit ka sahi phone number daalo');
   if(!date) return toast('Kaam ki date chuno');
-  if(!timeFrom || !timeTo) return toast('Time se aur time tak dono chuno');
-  if(timeTo <= timeFrom) return toast('"Time tak" ka time "Time se" ke baad hona chahiye');
+  if(timeTo && !timeFrom) return toast('"Time tak" bharna hai to pehle "Time se" bharo');
+  if(timeFrom && timeTo && timeTo <= timeFrom) return toast('"Time tak" ka time "Time se" ke baad hona chahiye');
   const total = num($('eTotal').value), paid = num($('ePaid').value);
   if(total > 0 && paid > total) return toast('Paid amount total se zyada nahi ho sakta');
   Object.assign(b, { name, phone, address: $('eAddress').value.trim(), date, timeFrom, timeTo, total, paid: total > 0 ? paid : 0 });
@@ -805,24 +874,27 @@ document.addEventListener('click', e => {
     const inp = $('rv-' + id); const amt = num(inp && inp.value);
     if(amt <= 0) return toast('Payment amount likho');
     const d = dues(b);
-    b.paid = num(b.paid) + Math.min(amt, d);
+    const received = Math.min(amt, d);
+    b.paid = num(b.paid) + received;
     if(dues(b) <= 0){ b.clearedAt = Date.now(); toast('Dues clear — Clear section me chala gaya'); }
     else toast(`Payment add ho gaya, ab ${money(dues(b))} baaki`);
     Store.save(bookings); queueOp({t:'up', b}); refresh();
+    const statusLine = dues(b) > 0 ? 'Baaki payment jaldi kar dein.' : 'Aapka poora payment clear ho gaya hai.';
+    window.open(waLink(b.phone, render(getTpl().pay, b, { received, payDate: fmtDate(todayStr()), statusLine })), '_blank');
   }
 });
 
 /* ============ Message settings ============ */
-function openSettings(){ updateSyncText(); const t = getTpl(); $('tplBooking').value = t.booking; $('tplDues').value = t.dues; $('setModal').classList.add('show'); }
+function openSettings(){ updateSyncText(); const t = getTpl(); $('tplBooking').value = t.booking; $('tplDues').value = t.dues; $('tplPay').value = t.pay; setSTab('msg'); $('setModal').classList.add('show'); pushModal(); }
 $('setBtn').addEventListener('click', openSettings);
-$('tplClose').addEventListener('click', () => $('setModal').classList.remove('show'));
-$('setModal').addEventListener('click', e => { if(e.target === $('setModal')) $('setModal').classList.remove('show'); });
+$('tplClose').addEventListener('click', closeModals);
+$('setModal').addEventListener('click', e => { if(e.target === $('setModal')) closeModals(); });
 $('tplSave').addEventListener('click', () => {
-  const tpl = { booking: $('tplBooking').value, dues: $('tplDues').value };
+  const tpl = { booking: $('tplBooking').value, dues: $('tplDues').value, pay: $('tplPay').value };
   localStorage.setItem(TPL_KEY, JSON.stringify(tpl)); queueOp({t:'tpl', tpl});
-  $('setModal').classList.remove('show'); refresh(); toast('Message save ho gaya');
+  closeModals(); refresh(); toast('Message save ho gaya');
 });
-$('tplReset').addEventListener('click', () => { $('tplBooking').value = DEFAULT_TPL.booking; $('tplDues').value = DEFAULT_TPL.dues; });
+$('tplReset').addEventListener('click', () => { $('tplBooking').value = DEFAULT_TPL.booking; $('tplDues').value = DEFAULT_TPL.dues; $('tplPay').value = DEFAULT_TPL.pay; });
 
 /* ============ PWA ============ */
 let deferredPrompt;
@@ -898,7 +970,10 @@ async function pull(){
     const keep = bookings.filter(b => !sIds.has(b.id) && (b.archived || shouldArchive(b)));
     keep.forEach(b => { b.archived = true; });
     bookings = server.concat(keep); Store.save(bookings);
-    if(j.templates) localStorage.setItem(TPL_KEY, JSON.stringify(j.templates));
+    if(j.templates){   // server me 'pay' template nahi hota, isliye phone wale ko mat mitao
+      let loc = {}; try{ loc = JSON.parse(localStorage.getItem(TPL_KEY)) || {}; }catch(e){}
+      localStorage.setItem(TPL_KEY, JSON.stringify(Object.assign({}, loc, j.templates)));
+    }
     lastSync = Date.now();
     refresh();
   }catch(e){
@@ -910,7 +985,7 @@ function updateSyncText(){
   const el = $('syncStatus'); if(!el) return;
   el.textContent = queue.length
     ? queue.length + ' change abhi Google Sheet me nahi gaye (internet aate hi chale jayenge)'
-    : (lastSync ? 'Google Sheet se sync hai · ' + new Date(lastSync).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}) : 'Abhi sync nahi hua');
+    : (lastSync ? 'Sync hai · ' + new Date(lastSync).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}) : 'Abhi sync nahi hua');
 }
 
 /* ---- Login ---- */
@@ -976,6 +1051,7 @@ document.addEventListener('visibilitychange', () => { if(!document.hidden) pull(
 window.addEventListener('online', () => { flush(); });
 
 /* ============ Start ============ */
+history.replaceState({ tab: 'add' }, '');
 $('fDate').value = '';
 refresh();
 setInterval(refresh, 60*60*1000); // har ghante auto-clean + refresh
